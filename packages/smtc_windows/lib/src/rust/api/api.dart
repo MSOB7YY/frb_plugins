@@ -19,9 +19,11 @@ Future<void> smtcUpdateConfig(
         .crateApiApiSmtcUpdateConfig(internal: internal, config: config);
 
 Future<void> smtcUpdateMetadata(
-        {required SmtcInternal internal, required MusicMetadata metadata}) =>
-    RustLib.instance.api
-        .crateApiApiSmtcUpdateMetadata(internal: internal, metadata: metadata);
+        {required SmtcInternal internal,
+        required MusicMetadata metadata,
+        String? appId}) =>
+    RustLib.instance.api.crateApiApiSmtcUpdateMetadata(
+        internal: internal, metadata: metadata, appId: appId);
 
 Future<void> smtcClearMetadata({required SmtcInternal internal}) =>
     RustLib.instance.api.crateApiApiSmtcClearMetadata(internal: internal);

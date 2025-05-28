@@ -1,10 +1,7 @@
 use crate::frb_generated::{RustOpaque, StreamSink};
 
-use crate::internal::{
-    config::SMTCConfig, metadata::MusicMetadata,
-    timeline::PlaybackTimeline,
-};
 use crate::internal::playback_status::PlaybackStatus;
+use crate::internal::{config::SMTCConfig, metadata::MusicMetadata, timeline::PlaybackTimeline};
 
 pub type SMTCInternal = crate::internal::smtc_internal::SMTCInternal;
 
@@ -24,8 +21,9 @@ pub fn smtc_update_config(
 pub fn smtc_update_metadata(
     internal: RustOpaque<SMTCInternal>,
     metadata: MusicMetadata,
+    app_id: Option<String>,
 ) -> anyhow::Result<()> {
-    internal.update_metadata(metadata)
+    internal.update_metadata(metadata, app_id)
 }
 
 pub fn smtc_clear_metadata(internal: RustOpaque<SMTCInternal>) -> anyhow::Result<()> {

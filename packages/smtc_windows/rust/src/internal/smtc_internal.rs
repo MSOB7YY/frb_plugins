@@ -1,4 +1,5 @@
 use crate::frb_generated::StreamSink;
+use windows::core::{Result, HSTRING};
 use windows::{
     Foundation::{self, TypedEventHandler},
     Media::{
@@ -8,7 +9,7 @@ use windows::{
         SystemMediaTransportControlsButtonPressedEventArgs,
         SystemMediaTransportControlsTimelineProperties,
     },
-    Storage::Streams::RandomAccessStreamReference,
+    Storage::{StorageFile, Streams::RandomAccessStreamReference},
 };
 
 use super::{
@@ -48,13 +49,19 @@ impl SMTCInternal {
         Ok(())
     }
 
-    pub fn update_metadata(&self, metadata: MusicMetadata) -> anyhow::Result<()> {
+    pub fn update_metadata(
+        &self,
+        metadata: MusicMetadata,
+        app_id: Option<String>,
+    ) -> anyhow::Result<()> {
         let media_player = &self.media_player;
         let smtc = media_player.SystemMediaTransportControls()?;
 
         let updater = smtc.DisplayUpdater()?;
 
         updater.ClearAll()?;
+
+        app_id.map(|s| updater.SetAppMediaId(&HSTRING::from(s)));
 
         updater.SetType(MediaPlaybackType::Music)?;
 

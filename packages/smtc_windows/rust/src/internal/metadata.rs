@@ -1,6 +1,7 @@
 use windows::core::HSTRING;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+
 pub struct MusicMetadata {
     pub title: Option<String>,
     pub artist: Option<String>,
@@ -28,5 +29,9 @@ impl MusicMetadata {
 
     pub fn h_thumbnail(&self) -> Option<windows::core::HSTRING> {
         self.thumbnail.clone().map(|s| HSTRING::from(s))
+    }
+
+    pub fn h_thumbnail_raw(&self) -> String {
+        self.thumbnail.clone().unwrap()
     }
 }

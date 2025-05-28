@@ -109,7 +109,9 @@ abstract class RustLibApi extends BaseApi {
       {required SmtcInternal internal, required SMTCConfig config});
 
   Future<void> crateApiApiSmtcUpdateMetadata(
-      {required SmtcInternal internal, required MusicMetadata metadata});
+      {required SmtcInternal internal,
+      required MusicMetadata metadata,
+      String? appId});
 
   Future<void> crateApiApiSmtcUpdatePlaybackStatus(
       {required SmtcInternal internal, required PlaybackStatus status});
@@ -404,12 +406,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @override
   Future<void> crateApiApiSmtcUpdateMetadata(
-      {required SmtcInternal internal, required MusicMetadata metadata}) {
+      {required SmtcInternal internal,
+      required MusicMetadata metadata,
+      String? appId}) {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_RustOpaque_SMTCInternal(internal, serializer);
         sse_encode_box_autoadd_music_metadata(metadata, serializer);
+        sse_encode_opt_String(appId, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
             funcId: 11, port: port_);
       },
@@ -418,7 +423,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         decodeErrorData: sse_decode_AnyhowException,
       ),
       constMeta: kCrateApiApiSmtcUpdateMetadataConstMeta,
-      argValues: [internal, metadata],
+      argValues: [internal, metadata, appId],
       apiImpl: this,
     ));
   }
@@ -426,7 +431,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiApiSmtcUpdateMetadataConstMeta =>
       const TaskConstMeta(
         debugName: "smtc_update_metadata",
-        argNames: ["internal", "metadata"],
+        argNames: ["internal", "metadata", "appId"],
       );
 
   @override

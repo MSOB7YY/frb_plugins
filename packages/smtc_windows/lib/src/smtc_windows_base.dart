@@ -1,24 +1,21 @@
 import 'dart:async';
-import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:smtc_windows/src/enums/button_event.dart';
 import 'package:smtc_windows/src/enums/repeat_mode.dart';
 import 'package:smtc_windows/src/extensions.dart';
 import 'package:smtc_windows/src/rust/frb_generated.dart';
+
+import 'rust/api/api.dart' as api;
 import 'rust/internal/config.dart';
 import 'rust/internal/metadata.dart';
 import 'rust/internal/playback_status.dart';
 import 'rust/internal/timeline.dart';
-import 'rust/api/api.dart';
-import 'rust/api/api.dart' as api;
-
-final _isWindows = kIsWeb ? false : Platform.isWindows;
 
 class SMTCWindows {
   //! Unsafe shared pointer to the underlying Rust struct.
-  late final SmtcInternal _internal;
+  late final api.SmtcInternal _internal;
 
+  String appId;
   SMTCConfig _config;
   PlaybackTimeline _timeline;
   MusicMetadata _metadata;
@@ -34,6 +31,7 @@ class SMTCWindows {
   bool _enabled;
 
   SMTCWindows({
+    required this.appId,
     SMTCConfig? config,
     PlaybackTimeline? timeline,
     MusicMetadata? metadata,
@@ -63,16 +61,9 @@ class SMTCWindows {
         _metadata = metadata ?? const MusicMetadata(),
         _shuffleEnabled = shuffleEnabled ?? false,
         _repeatMode = repeatMode ?? RepeatMode.none {
-    _buttonPressedStream = api
-        .smtcButtonPressEvent(internal: _internal)
-        .map((event) => PressedButton.fromString(event))
-        .asBroadcastStream();
-    _shuffleChangeStream =
-        api.smtcShuffleRequestEvent(internal: _internal).asBroadcastStream();
-    _repeatModeChangeStream = api
-        .smtcRepeatModeRequestEvent(internal: _internal)
-        .map(RepeatMode.fromString)
-        .asBroadcastStream();
+    _buttonPressedStream = api.smtcButtonPressEvent(internal: _internal).map((event) => PressedButton.fromString(event)).asBroadcastStream();
+    _shuffleChangeStream = api.smtcShuffleRequestEvent(internal: _internal).asBroadcastStream();
+    _repeatModeChangeStream = api.smtcRepeatModeRequestEvent(internal: _internal).map(RepeatMode.fromString).asBroadcastStream();
 
     updateConfig(_config);
 
@@ -121,12 +112,8 @@ class SMTCWindows {
   Duration? get startTime => Duration(milliseconds: timeline.startTimeMs);
   Duration? get endTime => Duration(milliseconds: timeline.endTimeMs);
   Duration? get position => Duration(milliseconds: timeline.positionMs);
-  Duration? get minSeekTime => timeline.minSeekTimeMs == null
-      ? null
-      : Duration(milliseconds: timeline.minSeekTimeMs!);
-  Duration? get maxSeekTime => timeline.maxSeekTimeMs == null
-      ? null
-      : Duration(milliseconds: timeline.maxSeekTimeMs!);
+  Duration? get minSeekTime => timeline.minSeekTimeMs == null ? null : Duration(milliseconds: timeline.minSeekTimeMs!);
+  Duration? get maxSeekTime => timeline.maxSeekTimeMs == null ? null : Duration(milliseconds: timeline.maxSeekTimeMs!);
 
   Future<void> updateConfig(SMTCConfig config) {
     _config = config;
@@ -149,6 +136,7 @@ class SMTCWindows {
     return api.smtcUpdateMetadata(
       internal: _internal,
       metadata: metadata,
+      appId: appId,
     );
   }
 

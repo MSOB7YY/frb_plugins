@@ -443,12 +443,16 @@ fn wire__crate__api__api__smtc_update_metadata_impl(
             let api_internal = <RustOpaqueMoi<SMTCInternal>>::sse_decode(&mut deserializer);
             let api_metadata =
                 <crate::internal::metadata::MusicMetadata>::sse_decode(&mut deserializer);
+            let api_app_id = <Option<String>>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| {
                 transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
                     (move || {
-                        let output_ok =
-                            crate::api::api::smtc_update_metadata(api_internal, api_metadata)?;
+                        let output_ok = crate::api::api::smtc_update_metadata(
+                            api_internal,
+                            api_metadata,
+                            api_app_id,
+                        )?;
                         Ok(output_ok)
                     })(),
                 )
