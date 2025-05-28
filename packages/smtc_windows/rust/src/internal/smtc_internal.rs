@@ -54,6 +54,8 @@ impl SMTCInternal {
 
         let updater = smtc.DisplayUpdater()?;
 
+        updater.ClearAll()?;
+
         updater.SetType(MediaPlaybackType::Music)?;
 
         let music_properties = updater.MusicProperties()?;
@@ -68,13 +70,28 @@ impl SMTCInternal {
             .h_album_artist()
             .map(|s| music_properties.SetAlbumArtist(&s));
 
-        let thumbnail = &metadata.h_thumbnail().map(|s| {
-            let uri = Foundation::Uri::CreateUri(&s).unwrap();
-            RandomAccessStreamReference::CreateFromUri(&uri).unwrap()
-        });
+        let thumbnail = if let Some(s) = metadata.h_thumbnail() {
+            let is_url = metadata.h_thumbnail_raw().starts_with("http");
+            if is_url {
+                let uri = Foundation::Uri::CreateUri(&s).unwrap();
+                Some(RandomAccessStreamReference::CreateFromUri(&uri).unwrap())
+            } else {
+                fn get_storage_file_sync(path: &HSTRING) -> Result<StorageFile> {
+                    let async_op = StorageFile::GetFileFromPathAsync(path)?;
+                    async_op.get()
+                }
+                match get_storage_file_sync(&s) {
+                    Ok(file) => Some(RandomAccessStreamReference::CreateFromFile(&file).unwrap()),
+                    Err(_e) => None,
+                }
+            }
+        } else {
+            None
+        };
 
-        if let Some(thumbnail) = thumbnail {
-            updater.SetThumbnail(thumbnail)?;
+        match thumbnail {
+            Some(x) => updater.SetThumbnail(&x)?,
+            None => updater.SetThumbnail(None)?,
         }
 
         updater.Update()?;
