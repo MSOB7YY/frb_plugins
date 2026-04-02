@@ -85,7 +85,10 @@ class SMTCWindows {
   }
 
   static Future<void> initialize() async {
-    await RustLib.init();
+    await RustLib.init(
+      // Reduce dependencies conflict
+      forceSameCodegenVersion: false,
+    );
     await RustLib.instance.executeRustInitializers();
   }
 
