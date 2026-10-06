@@ -24,6 +24,7 @@ class SMTCWindows {
   late final Stream<PressedButton> _buttonPressedStream;
   late final Stream<bool> _shuffleChangeStream;
   late final Stream<RepeatMode> _repeatModeChangeStream;
+  late final Stream<Duration> _positionChangeStream;
 
   late bool _shuffleEnabled;
   late RepeatMode _repeatMode;
@@ -64,6 +65,7 @@ class SMTCWindows {
     _buttonPressedStream = api.smtcButtonPressEvent(internal: _internal).map((event) => PressedButton.fromString(event)).asBroadcastStream();
     _shuffleChangeStream = api.smtcShuffleRequestEvent(internal: _internal).asBroadcastStream();
     _repeatModeChangeStream = api.smtcRepeatModeRequestEvent(internal: _internal).map(RepeatMode.fromString).asBroadcastStream();
+    _positionChangeStream = api.smtcPositionChangeRequestEvent(internal: _internal).map((positionMs) => Duration(milliseconds: positionMs)).asBroadcastStream();
 
     updateConfig(_config);
 
@@ -99,6 +101,7 @@ class SMTCWindows {
   Stream<PressedButton> get buttonPressStream => _buttonPressedStream;
   Stream<bool> get shuffleChangeStream => _shuffleChangeStream;
   Stream<RepeatMode> get repeatModeChangeStream => _repeatModeChangeStream;
+  Stream<Duration> get positionChangeStream => _positionChangeStream;
 
   bool get isPlayEnabled => config.playEnabled;
   bool get isPauseEnabled => config.pauseEnabled;

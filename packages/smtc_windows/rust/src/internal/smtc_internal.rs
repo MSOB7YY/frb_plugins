@@ -228,14 +228,14 @@ impl SMTCInternal {
             SystemMediaTransportControls,
             PlaybackPositionChangeRequestedEventArgs,
         >::new(move |_, args| {
-            let position_ms = args
+            let position_ticks = args
                 .as_ref()
                 .unwrap()
                 .RequestedPlaybackPosition()
                 .unwrap()
                 .Duration;
 
-            sink.add(position_ms);
+            sink.add(position_ticks / 10_000);
             Ok(())
         });
 
